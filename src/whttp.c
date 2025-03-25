@@ -124,6 +124,7 @@ void __whttp_set_header__(HttpHeader *header, char *key, char *value) {
     if ((index = __whttp_get_header__(*header, key)) != -1) { // check if key already exists
         free(header->values[index].data);
         header->values[index].data = strdup(value);
+        return;
     }
 
     if (header->size == header->capacity) {
