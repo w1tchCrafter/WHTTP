@@ -36,7 +36,7 @@ static HttpClient *whttp_default_client(char *host) {
         .redirect_count = HTTP_CLIENT_REDIRECT_MAX,
         .keepalive = false, ////////////////////// change to use the above function
         .timeout = (struct timeval) {
-            .tv_sec = 5,
+            .tv_sec = 2,
             .tv_usec = 0
         }
     };
@@ -336,9 +336,22 @@ static HttpResponse send_https_request(HttpRequest req, u8 *data) {
 
     memset(buf, 0, 1024);
     SSL_write(wrapper->ssl, data, strlen(data));
+    puts("ok");
 
-    while ((bytes = SSL_read(wrapper->ssl, buf, 9095)) > 0) {
+    while (true) {
+        bytes = SSL_read(wrapper->ssl, buf, 9095);
+
+        if (errno == EWOULDBLOCK && bytes == -1) {
+            printf("TIMEOUT OCCURRED\nExiting...\n");
+            
+            free(response);
+            free_ssl_wrapper(wrapper);
+            EVP_cleanup();
+            return __whttp_initialize_empty_response__();
+        }
+
         if (bytes == -1) break;
+
         if (copied + bytes >= len) {
             len = (copied + bytes) * 2;
             void *temp = realloc(response, len);
@@ -376,8 +389,18 @@ static HttpResponse send_http_request(HttpRequest req, u8 *data) {
         return __whttp_initialize_empty_response__();
     }
 
-    while ((bytes = read(req.conn.fd, buf, sizeof(buf))) > 0) {
+    while (true) {
+        bytes = read(req.conn.fd, buf, sizeof(buf)-1);
+
+        if (errno == EWOULDBLOCK && bytes == -1) {
+            printf("TIMEOUT OCCURRED\nExiting...\n");
+            free(response);
+
+            return __whttp_initialize_empty_response__();
+        }
+
         if (bytes == -1) break;
+    
         if (copied + bytes >= len) {
             len = (copied + bytes) * 2;
             void *temp = realloc(response, len);

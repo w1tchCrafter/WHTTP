@@ -67,7 +67,7 @@ void free_ssl_wrapper(TcpSSLWrapper *wrapper) {
 TcpErrors set_stream_timeout(struct timeval timeout, TcpStream stream) {
     i32 fd = stream.fd;
 
-    if ((setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))) == -1) return TCP_TMOUT_ERR;
+    if ((setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout))) == -1) return TCP_TMOUT_ERR;
     if ((setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))) == -1) return TCP_TMOUT_ERR;
 
     return NO_ERR;
@@ -77,8 +77,8 @@ TcpErrors enable_keepalive(TcpStream stream) {
     // change all this for a config struct later
     // this will also improve usage
     bool keep_alive = true;
-    i32 idle_time = 5; // await 60 seconds before start probing
-    i32 probe_interval = 5; // await for 10 seconds between each keep alive probe
+    i32 idle_time = 5; // await 5 seconds before start probing
+    i32 probe_interval = 5; // await for 5 seconds between each keep alive probe
     i32 probe_max = 5; // number of probes to send before closing the connection
     i32 fd = stream.fd;
 

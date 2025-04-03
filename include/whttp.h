@@ -129,17 +129,17 @@ typedef struct {
     HttpStatus   status_code;
 } HttpResponse;
 
-#define __whttp_initialize_empty_response__() ((HttpResponse) {.host = malloc(0), .headers = whttp_new_header()})
+#define __whttp_initialize_empty_response__() ((HttpResponse) {.host = malloc(0), .status = malloc(0), .headers = whttp_new_header()})
 
 #define whttp_set_header(obj, key, value) (__whttp_set_header__(&obj.headers, key, value))
 
-#define whttp_get_header(obj, key)                     \
+#define whttp_get_header(obj, key)                    \
 ({                                                    \
-    i32 i = __whttp_get_header__(obj.headers, key);       \
+    i32 i = __whttp_get_header__(obj.headers, key);   \
     (i == -1) ? NULL : obj.headers.values[i].data;    \
 })
 
-#define whttp_clean_header(obj)                      \
+#define whttp_clean_header(obj)                     \
 ({                                                  \
     for (u32 i = 0; i < obj.headers.size; i++) {    \
         free(obj.headers.values[i].key);            \
